@@ -3,7 +3,9 @@ package com.example.ujian4_quiz;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -16,15 +18,24 @@ import com.squareup.picasso.Picasso;
 
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class question_activity extends AppCompatActivity {
+public class question_activity extends AppCompatActivity implements View.OnClickListener {
 
     TextView txt_Question,scoreView;
     Button btn_A,btn_B,btn_C,btn_D;
     ImageView gambar1;
+
+    int size;
+    int y = 0;
+
+    ArrayList<String> total = new ArrayList<>();
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,6 +56,15 @@ public class question_activity extends AppCompatActivity {
         gambar1 = findViewById(R.id.gambar1);
 
 
+        btn_A.setOnClickListener(this);
+        btn_B.setOnClickListener(this);
+        btn_C.setOnClickListener(this);
+        btn_D.setOnClickListener(this);
+
+        btn_A.setId(Integer.parseInt("1"));
+        btn_B.setId(Integer.parseInt("2"));
+        btn_C.setId(Integer.parseInt("3"));
+        btn_D.setId(Integer.parseInt("4"));
         callquiz();
 
     }
@@ -68,30 +88,31 @@ public class question_activity extends AppCompatActivity {
                 QuizModel data = response.body();
                 //Toast.makeText(LoginActivity.this,userList.getToken().toString(),Toast.LENGTH_LONG).show();
 
+
                 if (data !=null) {
+                    size = data.getData().getSoalQuizAndroid().size();
+                 if (y < size) {
+                     if (data.getData().getSoalQuizAndroid().get(y).getJenisPertanyaan().equalsIgnoreCase("gambar")) {
+
+                         txt_Question.setText(data.getData().getSoalQuizAndroid().get(y).getPertanyaan().toString());
+                     btn_A.setText(data.getData().getSoalQuizAndroid().get(y).getA().toString());
+                     btn_B.setText(data.getData().getSoalQuizAndroid().get(y).getB().toString());
+                     btn_C.setText(data.getData().getSoalQuizAndroid().get(y).getC().toString());
+                     btn_D.setText(data.getData().getSoalQuizAndroid().get(y).getD().toString());
 
 
+                     String image = data.getData().getSoalQuizAndroid().get(y).getGambar();
+                     Picasso.get().load(image).into(gambar1);
 
-                    txt_Question.setText(data.getData().getSoalQuizAndroid().get(0).getPertanyaan().toString());
-                    btn_A.setText(data.getData().getSoalQuizAndroid().get(0).getA().toString());
-                    btn_B.setText(data.getData().getSoalQuizAndroid().get(0).getB().toString());
-                    btn_C.setText(data.getData().getSoalQuizAndroid().get(0).getC().toString());
-                    btn_D.setText(data.getData().getSoalQuizAndroid().get(0).getD().toString());
+                 }else {
 
+                         btn_A.setText(data.getData().getSoalQuizAndroid().get(y).getA().toString());
+                         btn_B.setText(data.getData().getSoalQuizAndroid().get(y).getB().toString());
+                         btn_C.setText(data.getData().getSoalQuizAndroid().get(y).getC().toString());
+                         btn_D.setText(data.getData().getSoalQuizAndroid().get(y).getD().toString());
 
-
-                    String image = "http://dewabrata.com:80/dewa/uploads/soal_quiz_android/" + data.getData().getSoalQuizAndroid().get(0).getGambar()+"20200110101347-2020-01-10soal_quiz_android101342.jpg";
-                    Picasso.get().load(image).into(gambar1);
-
-                 /*   AdapterListSimple adapter = new AdapterListSimple(MainActivity.this,data.getData().getMoviedb());
-
-                    lst_Movie.setLayoutManager(new LinearLayoutManager(MainActivity.this));
-                    lst_Movie.setItemAnimator(new DefaultItemAnimator());
-                    lst_Movie.setAdapter(adapter);
-
-                     */
-
-
+                     }
+                 y++;
 
 
 
@@ -103,7 +124,7 @@ public class question_activity extends AppCompatActivity {
                     } catch (Exception e) {
                         Toast.makeText(question_activity.this, e.getMessage(), Toast.LENGTH_LONG).show();
                     }
-                }
+                }};
             }
 
             @Override
@@ -117,5 +138,20 @@ public class question_activity extends AppCompatActivity {
 
 
 
+    }
+
+    @Override
+    public void onClick(View v) {
+        total.add(String.valueOf(v.getId()));
+        Toast.makeText(question_activity.this, String.valueOf(total), Toast.LENGTH_LONG).show();
+        callquiz();
+        if (y == 3) {
+
+
+            Intent i = new Intent(question_activity.this, ResultNilai.class);
+            i.putStringArrayListExtra("total", total);
+            startActivity(i);
+            finish();
+        }
     }
 }
